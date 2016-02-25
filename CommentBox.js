@@ -8,10 +8,13 @@ class CommentBox extends React.Component {
     this.state = { data: [] };
     this.dataItems = []
     this.handleCommentSubmit = this.handleCommentSubmit.bind(this);
+    this.loadCommentsFromFirebase = this.loadCommentsFromFirebase.bind(this);
   }
 
-  componentWillMount() {
+  loadCommentsFromFirebase() {
+    console.log("updating from")
     this.firebaseRef = new Firebase("https://jtreactcomments.firebaseio.com/comments");
+    this.dataItems = [];
 
     this.firebaseRef.on("child_added", function(dataSnapshot) {
       this.dataItems.push(dataSnapshot.val());
@@ -20,6 +23,11 @@ class CommentBox extends React.Component {
         data: this.dataItems
       });
     }.bind(this));
+  }
+
+  componentWillMount() {
+    this.loadCommentsFromFirebase();
+    setInterval(this.loadCommentsFromFirebase, this.props.fetchInterval);
   }
 
   componentDidMount() {
@@ -40,9 +48,9 @@ class CommentBox extends React.Component {
 
   // event handlers
   handleCommentSubmit(comment) {
-
     // set values on firebase
     this.firebaseRef.push(comment);
+    this.loadCommentsFromFirebase();
   }
 }
 
